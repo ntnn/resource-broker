@@ -120,7 +120,9 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	$(CONTAINER_TOOL) build -t ${IMG} .
+	rm -f bin/manager
+	GOOS=linux go build -o bin/manager ./cmd
+	$(CONTAINER_TOOL) build -t ${IMG} -f Dockerfile bin
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.

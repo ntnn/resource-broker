@@ -184,6 +184,7 @@ _cleanup() {
         certificates.example.platform-mesh.io/cert-from-consumer \
         certificates.cert-manager.io/cert-from-consumer \
         secret/cert-from-consumer
+    return 0
 }
 
 
