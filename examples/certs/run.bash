@@ -171,8 +171,6 @@ _run_example() {
 }
 
 _cleanup() {
-    kubectl::delete "$kind_consumer" certificates.example.platform-mesh.io/cert-from-consumer
-
     kubectl::delete "$kind_consumer" \
         certificates.example.platform-mesh.io/cert-from-consumer \
         secret/cert-from-consumer

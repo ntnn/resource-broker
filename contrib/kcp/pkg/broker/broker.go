@@ -341,7 +341,18 @@ func New(opts Options) (*Broker, error) { //nolint:gocyclo
 				return nil, fmt.Errorf("cluster %q is not a provider cluster: %w", clusterName, multicluster.ErrClusterNotFound)
 			}
 			b.opts.Log.Info("GetProviderCluster", "clusterName", clusterName)
-			return multiProvider.Get(ctx, clusterName)
+			cl, err := multiProvider.Get(ctx, clusterName)
+			b.opts.Log.Info("GetProviderCluster result", "clusterName", clusterName, "clusterFound", cl != nil, "err", err)
+			if err != nil {
+				for _, providerName := range multiProvider.ProviderNames() {
+					provider, pErr := multiProvider.GetProvider(providerName)
+					b.opts.Log.Info("GetProviderCluster debug", "clusterName", clusterName, "providerName", providerName, "providerType", fmt.Sprintf("%T", provider), "pErr", pErr)
+					if pcn, ok := provider.(clusterNamer); ok {
+						b.opts.Log.Info("GetProviderCluster debug names", "clusterName", clusterName, "providerName", providerName, "clusterNames", pcn.ClusterNames())
+					}
+				}
+			}
+			return cl, err
 		},
 		GetConsumerCluster: func(ctx context.Context, clusterName string) (cluster.Cluster, error) {
 			if !strings.HasPrefix(clusterName, broker.ConsumerPrefix) {
@@ -402,4 +413,8 @@ func (b *Broker) Start(ctx context.Context) error {
 		})
 	}
 	return g.Wait()
+}
+
+type clusterNamer interface {
+	ClusterNames() []string
 }
