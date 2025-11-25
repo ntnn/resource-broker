@@ -58,21 +58,13 @@ _setup() {
     log "Setting up Certificate APIExport for consumers"
     kcp::apiexport "$ws_platform" "./config/crd/bases/example.platform-mesh.io_certificates.yaml"
 
-    # log "Setting up internalca kind cluster"
-    # TODO: Setup with api-syncagent
-    # kind::cluster internalca "$kind_internalca"
-
     log "Setting up internalca kcp workspace"
     kcp::create_workspace "$kubeconfigs/kcp-admin.kubeconfig" "$ws_internalca" "internalca"
-    _provider_setup "$ws_internalca" internalca internal.corp
-
-    # log "Setting up externalca kind cluster"
-    # TODO: Setup with api-syncagent
-    # kind::cluster externalca "$kind_externalca"
+    _provider_setup_new internalca "$kind_internalca" "$ws_internalca" internal.corp
 
     log "Setting up externalca kcp workspace"
     kcp::create_workspace "$kubeconfigs/kcp-admin.kubeconfig" "$ws_externalca" "externalca"
-    _provider_setup "$ws_externalca" externalca corp.com
+    _provider_setup_new externalca "$kind_externalca" "$ws_externalca" corp.com
 
     # log "Setting up consumer kind cluster"
     # TODO setup with kube-bind
@@ -92,15 +84,37 @@ _cluster_id() {
         -o jsonpath='{.metadata.annotations.kcp\.io/cluster}'
 }
 
-_provider_setup() {
-    local ws_kubeconfig="$1"
-    local name="$2"
-    local suffix="$3"
+_provider_setup_new() {
+    local name="$1"
+    local kind_kubeconfig="$2"
+    local ws_kubeconfig="$3"
+    local suffix="$4"
 
-    # Creating an APIExport and binding it in the same workspace to get a VW
-    # TODO replace the use of the generic VM - this should be an APIExport
-    # from the exported resources from api-syncagent
-    kcp::apiexport "$ws_kubeconfig" "./config/crd/bases/example.platform-mesh.io_certificates.yaml"
+    kcp::create_workspace "$kubeconfigs/kcp-admin.kubeconfig" "$ws_kubeconfig" "$name"
+
+    log "Creating APIExport certificates in $name workspace"
+    {
+        echo "apiVersion: apis.kcp.io/v1alpha1"
+        echo "kind: APIExport"
+        echo "metadata:"
+        echo "  name: certificates"
+    } | kubectl::apply "$ws_kubeconfig" "-"
+
+    log "Setting up $name kind cluster"
+    kind::cluster "$name" "$kind_kubeconfig"
+    helm::install::kro "$kind_kubeconfig"
+    helm::install::certmanager "$kind_kubeconfig"
+    # Installing the same resources as in the non-kcp example
+    kubectl::kustomize "$kind_kubeconfig" "$example_dir/../certs/$name"
+
+    log "Setting up api-syncagent in $name kind cluster"
+    kubectl::kubeconfig::secret "$kind_kubeconfig" "$ws_kubeconfig" "$name" "broker-platform-control-plane"
+    helm::install::api_syncagent "$kind_kubeconfig" "certificates" "$name" "kubeconfig-$name" \
+        --set replicas=1
+        # --set kubeconfigHostOverride="broker-platform-control-plane" \
+    apisyncagent::publish "$kind_kubeconfig" "certificates" "Certificate" "example.platform-mesh.io" "v1alpha1"
+
+    log "Bind APIExport $name locally in $name workspace"
     kcp::apibinding "$ws_kubeconfig" "root:$name" certificates
 
     # Grab the VW endpoint URL for later use

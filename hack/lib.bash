@@ -151,6 +151,7 @@ helm::install::kcp() {
     helm::repo kcp  https://kcp-dev.github.io/helm-charts
     helm::install "$kubeconfig" \
         kcp-operator kcp/kcp-operator \
+        --version=0.3.0 \
         "$@"
 }
 
@@ -161,6 +162,94 @@ helm::install::kro() {
         kro oci://registry.k8s.io/kro/charts/kro \
         --version=0.5.1 \
         "$@"
+}
+
+helm::install::api_syncagent() {
+    local kubeconfig="$1"
+    local apiExportName="$2"
+    local agentName="$3"
+    local kcpKubeconfig="$4"
+    shift 4
+
+    if [[ -z "$kubeconfig" || -z "$apiExportName" || -z "$agentName" || -z "$kcpKubeconfig" ]]; then
+        die "kubeconfig, apiExportName, agentName, and kcpKubeconfig are required"
+    fi
+
+    helm::repo kcp  https://kcp-dev.github.io/helm-charts
+    # TODO version
+    helm::install "$kubeconfig" \
+        --namespace default \
+        api-syncagent kcp/api-syncagent \
+        --version=0.4.2 \
+        --set namespace=default \
+        --set apiExportName="$apiExportName" \
+        --set agentName="$agentName" \
+        --set kcpKubeconfig="$kcpKubeconfig" \
+        "$@"
+}
+
+apisyncagent::publish() {
+    local kubeconfig="$1"
+    local resource="$2"
+    local kind="$3"
+    local group="$4"
+    local versions="$5"
+    shift 4
+    if [[ -z "$resource" || -z "$kind" || -z "$group" || -z "$versions" ]]; then
+        die "resource, kind, group, and versions are required"
+    fi
+
+    {
+        echo "apiVersion: syncagent.kcp.io/v1alpha1"
+        echo "kind: PublishedResource"
+        echo "metadata:"
+        echo "  name: $resource"
+        echo "spec:"
+        echo "  resource:"
+        echo "    kind: $kind"
+        echo "    apiGroup: $group"
+        echo "    versions: [$versions]"
+        echo "---"
+        echo "apiVersion: rbac.authorization.k8s.io/v1"
+        echo "kind: ClusterRole"
+        echo "metadata:"
+        echo "  name: api-syncagent:$resource"
+        echo "rules:"
+        echo "  - apiGroups:"
+        echo "      - $group"
+        echo "    resources:"
+        echo "      - $resource"
+        echo "    verbs:"
+        echo "      - get"
+        echo "      - list"
+        echo "      - watch"
+        echo "      - create"
+        echo "      - update"
+        echo "---"
+        echo "apiVersion: rbac.authorization.k8s.io/v1"
+        echo "kind: ClusterRoleBinding"
+        echo "metadata:"
+        echo "  name: api-syncagent:$resource"
+        echo "roleRef:"
+        echo "  apiGroup: rbac.authorization.k8s.io"
+        echo "  kind: ClusterRole"
+        echo "  name: api-syncagent:$resource"
+        echo "subjects:"
+        echo "  - kind: ServiceAccount"
+        echo "    name: api-syncagent"
+        echo "    namespace: default"
+    } | kubectl::apply "$kubeconfig" -
+
+    # # Create a kubeconfig secret that works from _inside_ the network
+    # # (i.e. the kcp internal CA)
+    # kubectl --kubeconfig "$kind_platform" get secret operator-kubeconfig \
+    #     -o jsonpath='{.data.kubeconfig}' \
+    #     | base64 -d \
+    #     | kubectl create secret generic "kubeconfig-$name" \
+    #         --from-file=kubeconfig=/dev/stdin \
+    #         --dry-run=client -o yaml \
+    #     | kubectl::apply "$kind_kubeconfig" -
+
 }
 
 kubeconfig::hostname() {
@@ -255,6 +344,7 @@ kcp::setup::kubeconfigs() {
 
     # Create port forward to access kcp from host
     kcp::front_proxy_forward "$kind_kubeconfig" "8443"
+    # kcp::root_shard_forward "$kind_kubeconfig" "8443"
     cp "$kcp_kubeconfig" "$kcp_host_kubeconfig"
     local hostname="$(kubectl --kubeconfig "$kind_kubeconfig" get rootshards.operator.kcp.io root -o jsonpath='{.spec.external.hostname}')"
     kubeconfig::hostname::set "$kcp_host_kubeconfig" "$hostname:443" "127.0.0.1:8443"
@@ -274,8 +364,21 @@ kcp::front_proxy_forward() {
         kubectl wait --for=condition=Available=True deployment/frontproxy-front-proxy \
             --timeout="$timeout" \
             || die "front proxy is not available"
+    # KUBECONFIG="$kubeconfig" \
+    #     kubectl port-forward svc/frontproxy-front-proxy "$port:6443" 2>/dev/null >/dev/null &
     KUBECONFIG="$kubeconfig" \
-        kubectl port-forward svc/frontproxy-front-proxy "$port:6443" 2>/dev/null >/dev/null &
+        kubectl port-forward svc/frontproxy-front-proxy "$port:6443" &
+}
+
+kcp::root_shard_forward() {
+    local kubeconfig="$1"
+    local port="$2"
+    KUBECONFIG="$kubeconfig" \
+        kubectl wait --for=condition=Available=True deployment/root-kcp \
+            --timeout="$timeout" \
+            || die "root shard is not available"
+    KUBECONFIG="$kubeconfig" \
+        kubectl port-forward svc/root-proxy "$port:6443" 2>/dev/null >/dev/null &
 }
 
 kcp::create_workspace() {

@@ -8,7 +8,11 @@ spec:
     # used as the VW base url. This doesn't work with kcp running in
     # a kube cluster, which uses :6443 itself. This is fixed in main but
     # not in the release version kcp-operator deploys.
-    tag: main
+    tag: 8dae1f51e
+  # Setting the shardBaseURL here only works because this is
+  # a single-shard setup. In multi-shard setups, each shard would
+  # need to have its own correct URL and be exposed through an ingress.
+  # shardBaseURL: https://broker-platform-control-plane:443/rootshard
   external:
     hostname: broker-platform-control-plane
     port: 443
@@ -23,6 +27,30 @@ spec:
   etcd:
     endpoints:
       - http://kcp-etcd-client.default.svc.cluster.local:2379
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: kcp-root
+#   annotations:
+#     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
+# spec:
+#   tls:
+#     - hosts:
+#         - broker-platform-control-plane
+#       secretName: root-server
+#   rules:
+#     - host: broker-platform-control-plane
+#       http:
+#         paths:
+#           - path: /rootshard/(.*)
+#             pathType: ImplementationSpecific
+#             backend:
+#               service:
+#                 name: root-kcp
+#                 port:
+#                   number: 6443
 ---
 apiVersion: operator.kcp.io/v1alpha1
 kind: FrontProxy
@@ -43,7 +71,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: kcp
+  name: kcp-proxy
   annotations:
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 spec:
@@ -56,7 +84,7 @@ spec:
       http:
         paths:
           - path: /
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: frontproxy-front-proxy
