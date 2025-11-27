@@ -496,6 +496,7 @@ kcp::serviceaccount::admin() {
     local kubeconfig="$1"
     local sa_name="$2"
     local namespace="$3"
+    [[ -z "$namespace" ]] && namespace="default"
 
     KUBECONFIG="$kubeconfig" \
         kubectl create serviceaccount "$sa_name" -n "$namespace" --dry-run=client -o yaml \
