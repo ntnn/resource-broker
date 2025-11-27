@@ -105,7 +105,8 @@ _provider_setup_new() {
     helm::install::kro "$kind_kubeconfig"
     helm::install::certmanager "$kind_kubeconfig"
     # Installing the same resources as in the non-kcp example
-    kubectl::kustomize "$kind_kubeconfig" "$example_dir/../certs/$name"
+    kubectl::kustomize "$kind_kubeconfig" "$example_dir/$name"
+    kubectl::wait "$kind_kubeconfig" rgd/certificates.example.platform-mesh.io condition=Ready
 
     log "Setting up api-syncagent in $name kind cluster"
     kubectl::kubeconfig::secret "$kind_kubeconfig" "$ws_kubeconfig" "$name" "broker-platform-control-plane:32443"
