@@ -179,7 +179,7 @@ helm::install::api_syncagent() {
     helm::install "$kubeconfig" \
         --namespace default \
         api-syncagent kcp/api-syncagent \
-        --version=0.4.2 \
+        --version=0.3.0 \
         --set namespace=default \
         --set apiExportName="$apiExportName" \
         --set agentName="$agentName" \
