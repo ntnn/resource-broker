@@ -341,14 +341,14 @@ kcp::setup::kubeconfigs() {
         || die "Failed to get admin kubeconfig from kind cluster"
 
     # Replace the port with the node port from the service
-    yq -i ".clusters[].cluster.server |= sub(\":6443\"; \":8443\")" "$kcp_kubeconfig"
+    yq -i ".clusters[].cluster.server |= sub(\":32443\"; \":8443\")" "$kcp_kubeconfig"
 
     # Create port forward to access kcp from host
     kcp::front_proxy_forward "$kind_kubeconfig" "8443"
     # kcp::root_shard_forward "$kind_kubeconfig" "8443"
     cp "$kcp_kubeconfig" "$kcp_host_kubeconfig"
     local hostname="$(kubectl --kubeconfig "$kind_kubeconfig" get rootshards.operator.kcp.io root -o jsonpath='{.spec.external.hostname}')"
-    kubeconfig::hostname::set "$kcp_host_kubeconfig" "$hostname:443" "127.0.0.1:8443"
+    kubeconfig::hostname::set "$kcp_host_kubeconfig" "$hostname:32443" "127.0.0.1:8443"
 }
 
 # kcp::front_proxy_port() {
