@@ -8,6 +8,7 @@ patches:
   - target:
       kind: Deployment
       name: ingress-nginx-controller
+      namespace: ingress-nginx
       version: v1
     patch: |-
       - op: add

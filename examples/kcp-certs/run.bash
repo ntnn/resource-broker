@@ -111,7 +111,6 @@ _provider_setup_new() {
     kubectl::kubeconfig::secret "$kind_kubeconfig" "$ws_kubeconfig" "$name" "broker-platform-control-plane"
     helm::install::api_syncagent "$kind_kubeconfig" "certificates" "$name" "kubeconfig-$name" \
         --set replicas=1
-        # --set kubeconfigHostOverride="broker-platform-control-plane" \
     apisyncagent::publish "$kind_kubeconfig" "certificates" "Certificate" "example.platform-mesh.io" "v1alpha1"
 
     log "Bind APIExport $name locally in $name workspace"

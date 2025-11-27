@@ -364,21 +364,8 @@ kcp::front_proxy_forward() {
         kubectl wait --for=condition=Available=True deployment/frontproxy-front-proxy \
             --timeout="$timeout" \
             || die "front proxy is not available"
-    # KUBECONFIG="$kubeconfig" \
-    #     kubectl port-forward svc/frontproxy-front-proxy "$port:6443" 2>/dev/null >/dev/null &
     KUBECONFIG="$kubeconfig" \
-        kubectl port-forward svc/frontproxy-front-proxy "$port:6443" &
-}
-
-kcp::root_shard_forward() {
-    local kubeconfig="$1"
-    local port="$2"
-    KUBECONFIG="$kubeconfig" \
-        kubectl wait --for=condition=Available=True deployment/root-kcp \
-            --timeout="$timeout" \
-            || die "root shard is not available"
-    KUBECONFIG="$kubeconfig" \
-        kubectl port-forward svc/root-proxy "$port:6443" 2>/dev/null >/dev/null &
+        kubectl port-forward svc/frontproxy-front-proxy "$port:6443" 2>/dev/null >/dev/null &
 }
 
 kcp::create_workspace() {
