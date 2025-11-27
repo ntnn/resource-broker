@@ -108,7 +108,7 @@ _provider_setup_new() {
     kubectl::kustomize "$kind_kubeconfig" "$example_dir/../certs/$name"
 
     log "Setting up api-syncagent in $name kind cluster"
-    kubectl::kubeconfig::secret "$kind_kubeconfig" "$ws_kubeconfig" "$name" "broker-platform-control-plane"
+    kubectl::kubeconfig::secret "$kind_kubeconfig" "$ws_kubeconfig" "$name" "broker-platform-control-plane:32443"
     helm::install::api_syncagent "$kind_kubeconfig" "certificates" "$name" "kubeconfig-$name" \
         --set replicas=1
     apisyncagent::publish "$kind_kubeconfig" "certificates" "Certificate" "example.platform-mesh.io" "v1alpha1"
