@@ -265,7 +265,7 @@ kubectl::kubeconfig::secret() {
     cp "$target" "$target.tmp"
     target="$target.tmp"
 
-    if [[ -z "$hostname" ]]; then
+    if [[ -n "$hostname" ]]; then
         local cur_hostname="$(kubeconfig::hostname "$target")"
         kubeconfig::hostname::set "$target" "$cur_hostname" "$hostname"
     fi
