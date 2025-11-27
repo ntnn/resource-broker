@@ -176,7 +176,6 @@ helm::install::api_syncagent() {
     fi
 
     helm::repo kcp  https://kcp-dev.github.io/helm-charts
-    # TODO version
     helm::install "$kubeconfig" \
         --namespace default \
         api-syncagent kcp/api-syncagent \
@@ -239,17 +238,6 @@ apisyncagent::publish() {
         echo "    name: api-syncagent"
         echo "    namespace: default"
     } | kubectl::apply "$kubeconfig" -
-
-    # # Create a kubeconfig secret that works from _inside_ the network
-    # # (i.e. the kcp internal CA)
-    # kubectl --kubeconfig "$kind_platform" get secret operator-kubeconfig \
-    #     -o jsonpath='{.data.kubeconfig}' \
-    #     | base64 -d \
-    #     | kubectl create secret generic "kubeconfig-$name" \
-    #         --from-file=kubeconfig=/dev/stdin \
-    #         --dry-run=client -o yaml \
-    #     | kubectl::apply "$kind_kubeconfig" -
-
 }
 
 kubeconfig::hostname() {
@@ -350,13 +338,6 @@ kcp::setup::kubeconfigs() {
     local hostname="$(kubectl --kubeconfig "$kind_kubeconfig" get rootshards.operator.kcp.io root -o jsonpath='{.spec.external.hostname}')"
     kubeconfig::hostname::set "$kcp_host_kubeconfig" "$hostname:32443" "127.0.0.1:8443"
 }
-
-# kcp::front_proxy_port() {
-#     local kubeconfig="$1"
-#     KUBECONFIG="$kubeconfig" \
-#         kubectl get svc frontproxy-front-proxy -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}' \
-#         || die "Failed to get front proxy port"
-# }
 
 kcp::front_proxy_forward() {
     local kubeconfig="$1"
