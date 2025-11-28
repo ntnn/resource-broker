@@ -1,0 +1,123 @@
+statusStyle:
+  absent: stroke:grey,stroke-width:4px
+  pending: stroke:yellow,stroke-width:4px,fill:lightyellow
+  healthy: stroke:green,stroke-width:4px,fill:lightgreen
+
+nodes:
+
+  # internalop:
+  #   selector:
+  #     cluster: ./kubeconfigs/internalca.kubeconfig+kind-broker-internalca
+  #     gvr:
+  #       version: v1
+  #       resource: deployments
+  #       group: apps
+  #     namespace: default
+  #     name: api-syncagent
+
+  # internal kind
+  internalcert:
+    selector:
+      cluster: ./kubeconfigs/internalca.kubeconfig+kind-broker-internalca
+      gvr:
+        version: v1alpha1
+        resource: certificates
+        group: example.platform-mesh.io
+      labelSelector:
+        matchLabels:
+          syncagent.kcp.io/agent-name: internalca
+
+  internalsecret:
+    selector:
+      cluster: ./kubeconfigs/internalca.kubeconfig+kind-broker-internalca
+      gvr:
+        version: v1
+        resource: secrets
+      labelSelector:
+        matchLabels:
+          kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+
+  # external kind
+  externalcert:
+    selector:
+      cluster: ./kubeconfigs/externalca.kubeconfig+kind-broker-externalca
+      gvr:
+        version: v1alpha1
+        resource: certificates
+        group: example.platform-mesh.io
+      labelSelector:
+        matchLabels:
+          syncagent.kcp.io/agent-name: externalca
+
+  externalsecret:
+    selector:
+      cluster: ./kubeconfigs/externalca.kubeconfig+kind-broker-externalca
+      gvr:
+        version: v1
+        resource: secrets
+      labelSelector:
+        matchLabels:
+          kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+
+  # internal vw
+  consumerCertInt:
+    selector:
+      cluster: ./kubeconfigs/workspaces/internalca.vw.kubeconfig+default
+      gvr:
+        version: v1alpha1
+        resource: certificates
+        group: example.platform-mesh.io
+      name: cert-from-consumer
+      namespace: default
+
+  consumerSecretInt:
+    selector:
+      cluster: ./kubeconfigs/workspaces/internalca.vw.kubeconfig+default
+      namespace: default
+      gvr:
+        version: v1
+        resource: secrets
+      labelSelector:
+        matchLabels:
+          kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+
+  # external vw
+  consumerCertExt:
+    selector:
+      cluster: ./kubeconfigs/workspaces/externalca.vw.kubeconfig+default
+      gvr:
+        version: v1alpha1
+        resource: certificates
+        group: example.platform-mesh.io
+      name: cert-from-consumer
+      namespace: default
+
+  consumerSecretExt:
+    selector:
+      cluster: ./kubeconfigs/workspaces/externalca.vw.kubeconfig+default
+      namespace: default
+      gvr:
+        version: v1
+        resource: secrets
+      labelSelector:
+        matchLabels:
+          kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+
+  # consumer
+  consumerCert:
+    selector:
+      cluster: ./kubeconfigs/workspaces/consumer.kubeconfig+workspace.kcp.io/current
+      gvr:
+        version: v1alpha1
+        resource: certificates
+        group: example.platform-mesh.io
+      name: cert-from-consumer
+      namespace: default
+
+  consumerSecret:
+    selector:
+      cluster: ./kubeconfigs/workspaces/consumer.kubeconfig+workspace.kcp.io/current
+      namespace: default
+      gvr:
+        version: v1
+        resource: secrets

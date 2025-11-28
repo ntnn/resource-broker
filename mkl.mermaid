@@ -1,0 +1,53 @@
+flowchart LR
+
+subgraph internalca[Internal CA Compute]
+    %% internalop[Operator]
+    internalcert[Consumer Cert]
+    internalsecret[Consumer Secret]
+end
+%% internalop --> internalCertExport
+internalcert <--> consumerCertInt
+internalsecret <--> consumerSecretInt
+
+subgraph externalca[External CA Compute]
+    %% externalop[Operator]
+    externalcert[Consumer Cert]
+    externalsecret[Consumer Secret]
+end
+%% externalop --> externalCertExport
+externalcert <--> consumerCertExt
+externalsecret <--> consumerSecretExt
+
+
+subgraph kcp
+
+    %% subgraph internalws[Internal CA Workspace]
+    %%     internalCertExport[Internal CA APIExport]
+    %% end
+    %% internalCertExport --> internalvw
+
+    %% subgraph externalws[External CA Workspace]
+    %%     externalCertExport[External CA APIExport]
+    %% end
+    %% externalCertExport --> externalvw
+
+    subgraph consumer[Consumer Workspace]
+        subgraph internalvw[Internal CA VW]
+            consumerCertInt[Consumer Cert]
+            consumerSecretInt[Consumer Secret]
+        end
+
+        subgraph externalvw[External CA VW]
+            consumerCertExt[Consumer Cert]
+            consumerSecretExt[Consumer Secret]
+        end
+
+        consumerCert[Consumer Cert]
+        consumerCertInt <--> consumerCert
+        consumerCertExt <--> consumerCert
+        consumerSecret[Consumer Secret]
+        consumerSecretInt <--> consumerSecret
+        consumerSecretExt <--> consumerSecret
+    end
+
+end
