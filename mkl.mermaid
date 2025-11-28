@@ -1,0 +1,94 @@
+flowchart LR
+
+classDef compute stroke:black,fill:white
+classDef workspace stroke:black,fill:lightgreen
+classDef vw stroke:black,fill:lightblue
+classDef absent stroke:grey,stroke-width:4px
+classDef pending stroke:yellow,stroke-width:4px,fill:lightyellow
+classDef healthy stroke:green,stroke-width:4px,fill:lightgreen
+
+subgraph internalca[Internal CA Compute]
+    %% internalop[Operator]
+    internalcert[Consumer Cert]
+    internalsecret[Consumer Secret]
+end
+class internalca compute
+%% internalop --> internalCertExport
+internalcert --- consumerCertInt
+%% consumerCertInt --> internalcert
+internalsecret --- consumerSecretInt
+
+subgraph externalca[External CA Compute]
+    %% externalop[Operator]
+    externalcert[Consumer Cert]
+    externalsecret[Consumer Secret]
+end
+class externalca compute
+%% externalop --> externalCertExport
+externalcert --- consumerCertExt
+externalsecret --- consumerSecretExt
+
+
+subgraph kcp
+
+    %% subgraph internalws[Internal CA Workspace]
+    %%     internalCertExport[Internal CA APIExport]
+    %% end
+    %% internalCertExport --> internalvw
+
+    %% subgraph externalws[External CA Workspace]
+    %%     externalCertExport[External CA APIExport]
+    %% end
+    %% externalCertExport --> externalvw
+
+    subgraph platform[Platform Workspace]
+        subgraph internalvw[Internal CA VW]
+            consumerCertInt[Consumer Cert]
+            consumerSecretInt[Consumer Secret]
+        end
+        class internalvw vw
+
+        subgraph externalvw[External CA VW]
+            consumerCertExt[Consumer Cert]
+            consumerSecretExt[Consumer Secret]
+        end
+        class externalvw vw
+    end
+    class platform workspace
+
+    subgraph consumer[Consumer Workspace]
+        subgraph consumervw[Consumer VW]
+            consumerCertVW[Consumer Cert]
+            consumerSecretVW[Consumer Secret]
+        end
+        class consumervw vw
+        consumerCertInt --- consumerCertVW
+        consumerSecretInt --- consumerSecretVW
+        consumerCertExt --- consumerCertVW
+        consumerSecretExt --- consumerSecretVW
+
+        consumerCert[Consumer Cert]
+        consumerCertVW --- consumerCert
+        consumerSecret[Consumer Secret]
+        consumerSecretVW --- consumerSecret
+    end
+    class consumer workspace
+
+end
+
+%% subgraph legend[Legend]
+%%     direction LR
+%%     subgraph legendCompute[Compute]
+%%     end
+%%     class legendCompute compute
+%%     subgraph legenWorkspace[Workspace]
+%%     end
+%%     class legenWorkspace workspace
+%%     subgraph legendVW[Virtual Workspace]
+%%     end
+%%     class legendVW vw
+%%     legendAbsent[Absent]
+%%     class legendAbsent absent
+%%     legendHealthy[Healthy]
+%%     class legendHealthy healthy
+%% end
