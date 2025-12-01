@@ -26,6 +26,7 @@ nodes:
       labelSelector:
         matchLabels:
           syncagent.kcp.io/agent-name: internalca
+    label: '"Consumer Cert\n"+.rs.Resources[0].spec.fqdn'
 
   internalsecret:
     selector:
@@ -36,6 +37,7 @@ nodes:
       labelSelector:
         matchLabels:
           kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+    label: '"Consumer Secret\n"+parseCert(.rs.Resources[0].data["tls.crt"]).Subject.CommonName'
 
   # external kind
   externalcert:
@@ -48,6 +50,7 @@ nodes:
       labelSelector:
         matchLabels:
           syncagent.kcp.io/agent-name: externalca
+    label: '"Consumer Cert\n"+.rs.Resources[0].spec.fqdn'
 
   externalsecret:
     selector:
@@ -58,6 +61,7 @@ nodes:
       labelSelector:
         matchLabels:
           kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+    label: '"Consumer Secret\n"+parseCert(.rs.Resources[0].data["tls.crt"]).Subject.CommonName'
 
   # internal vw
   consumerCertInt:
@@ -69,6 +73,7 @@ nodes:
         group: example.platform-mesh.io
       name: cert-from-consumer
       namespace: default
+    label: '"Consumer Cert\n"+.rs.Resources[0].spec.fqdn'
 
   consumerSecretInt:
     selector:
@@ -80,6 +85,7 @@ nodes:
       labelSelector:
         matchLabels:
           kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+    label: '"Consumer Secret\n"+parseCert(.rs.Resources[0].data["tls.crt"]).Subject.CommonName'
 
   # external vw
   consumerCertExt:
@@ -91,6 +97,7 @@ nodes:
         group: example.platform-mesh.io
       name: cert-from-consumer
       namespace: default
+    label: '"Consumer Cert\n"+.rs.Resources[0].spec.fqdn'
 
   consumerSecretExt:
     selector:
@@ -102,6 +109,7 @@ nodes:
       labelSelector:
         matchLabels:
           kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
+    label: '"Consumer Secret\n"+parseCert(.rs.Resources[0].data["tls.crt"]).Subject.CommonName'
 
   # consumer
   consumerCert:
@@ -113,6 +121,7 @@ nodes:
         group: example.platform-mesh.io
       name: cert-from-consumer
       namespace: default
+    label: '"Consumer Cert\n"+.rs.Resources[0].spec.fqdn'
 
   consumerSecret:
     selector:
@@ -121,3 +130,4 @@ nodes:
       gvr:
         version: v1
         resource: secrets
+    label: '"Consumer Secret\n"+parseCert(.rs.Resources[0].data["tls.crt"]).Subject.CommonName'
