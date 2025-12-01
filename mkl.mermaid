@@ -31,7 +31,7 @@ subgraph kcp
     %% end
     %% externalCertExport --> externalvw
 
-    subgraph consumer[Consumer Workspace]
+    subgraph platform[Platform Workspace]
         subgraph internalvw[Internal CA VW]
             consumerCertInt[Consumer Cert]
             consumerSecretInt[Consumer Secret]
@@ -41,13 +41,22 @@ subgraph kcp
             consumerCertExt[Consumer Cert]
             consumerSecretExt[Consumer Secret]
         end
+    end
+
+    subgraph consumer[Consumer Workspace]
+        subgraph consumervw[Consumer VW]
+            consumerCertVW[Consumer Cert]
+            consumerSecretVW[Consumer Secret]
+        end
+        consumerCertInt <--> consumerCertVW
+        consumerSecretInt <--> consumerSecretVW
+        consumerCertExt <--> consumerCertVW
+        consumerSecretExt <--> consumerSecretVW
 
         consumerCert[Consumer Cert]
-        consumerCertInt <--> consumerCert
-        consumerCertExt <--> consumerCert
+        consumerCertVW <--> consumerCert
         consumerSecret[Consumer Secret]
-        consumerSecretInt <--> consumerSecret
-        consumerSecretExt <--> consumerSecret
+        consumerSecretVW <--> consumerSecret
     end
 
 end

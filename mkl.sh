@@ -9,6 +9,7 @@ kubeconfigs=(
     ./kubeconfigs/workspaces/externalca.vw.kubeconfig
     ./kubeconfigs/workspaces/internalca.kubeconfig
     ./kubeconfigs/workspaces/internalca.vw.kubeconfig
+    ./kubeconfigs/workspaces/consumer.vw.kubeconfig
     ./kubeconfigs/workspaces/consumer.kubeconfig
     ./kubeconfigs/platform.kubeconfig
 )

@@ -111,6 +111,31 @@ nodes:
           kro.run/resource-graph-definition-name: certificates.example.platform-mesh.io
     label: '"Consumer Secret\n"+parseCert(.rs.Resources[0].data["tls.crt"]).Subject.CommonName'
 
+  # consumer vw
+  consumerCertVW:
+    selector:
+      cluster: ./kubeconfigs/workspaces/consumer.vw.kubeconfig+workspace.kcp.io/current
+      gvr:
+        version: v1alpha1
+        resource: certificates
+        group: example.platform-mesh.io
+      name: cert-from-consumer
+      namespace: default
+
+  consumerSecretVW:
+    selector:
+      cluster: ./kubeconfigs/workspaces/consumer.vw.kubeconfig+workspace.kcp.io/current
+      namespace: default
+      gvr:
+        version: v1
+        resource: secrets
+      owner:
+        gvr:
+          version: v1alpha1
+          resource: certificates
+          group: example.platform-mesh.io
+        name: cert-from-consumer
+
   # consumer
   consumerCert:
     selector:
