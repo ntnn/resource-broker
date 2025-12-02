@@ -121,6 +121,7 @@ nodes:
         group: example.platform-mesh.io
       name: cert-from-consumer
       namespace: default
+    label: '"Consumer Cert\n"+.rs.Resources[0].spec.fqdn'
 
   consumerSecretVW:
     selector:
@@ -135,6 +136,7 @@ nodes:
           resource: certificates
           group: example.platform-mesh.io
         name: cert-from-consumer
+    label: '"Consumer Secret\n"+parseCert(.rs.Resources[0].data["tls.crt"]).Subject.CommonName'
 
   # consumer
   consumerCert:
