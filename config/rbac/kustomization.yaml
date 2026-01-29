@@ -30,6 +30,9 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the resource-broker itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
+- operator.broker_broker_admin_role.yaml
+- operator.broker_broker_editor_role.yaml
+- operator.broker_broker_viewer_role.yaml
 - example_certificate_admin_role.yaml
 - example_certificate_editor_role.yaml
 - example_certificate_viewer_role.yaml
