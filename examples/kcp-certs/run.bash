@@ -49,8 +49,8 @@ _setup() {
     log "Installing migration CRDs into platform workspace"
     kubectl::apply \
         "$ws_platform" \
-        ./config/crd/bases/broker.platform-mesh.io_migrationconfigurations.yaml \
-        ./config/crd/bases/broker.platform-mesh.io_migrations.yaml
+        ./config/broker/crd/broker.platform-mesh.io_migrationconfigurations.yaml \
+        ./config/broker/crd/broker.platform-mesh.io_migrations.yaml
 
     log "Setting up AcceptAPI APIExport for providers"
     kcp::apiexport "$ws_platform" "./config/crd/bases/broker.platform-mesh.io_acceptapis.yaml" \

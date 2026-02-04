@@ -18,7 +18,10 @@ _setup() {
     kind::cluster platform "$kind_platform"
     # Platform only needs the Migration and MigrationConfiguration CRDs but
     # mcmanager currently requries all to be installed.
-    kubectl::kustomize "$kind_platform" ./config/crd/
+    kubectl::apply "$kind_platform" \
+        ./config/broker/crd/broker.platform-mesh.io_acceptapis.yaml \
+        ./config/broker/crd/broker.platform-mesh.io_migrationconfigurations.yaml \
+        ./config/broker/crd/broker.platform-mesh.io_migrations.yaml
 
     log "Setting up provider internalca"
     kind::cluster internalca "$kind_internalca"
