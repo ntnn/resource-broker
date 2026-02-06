@@ -52,6 +52,40 @@ spec:
     app.kubernetes.io/managed-by: kcp-operator
     app.kubernetes.io/name: kcp
 ---
+# same as root shard. create shard and expose via nodeport service
+apiVersion: operator.kcp.io/v1alpha1
+kind: Shard
+metadata:
+  name: second-shard
+spec:
+  etcd:
+    endpoints:
+      - http://kcp-etcd-client.default.svc.cluster.local:2379
+  shardBaseURL: https://broker-platform-control-plane:32112
+  rootShard:
+    ref:
+      name: root
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kcp-nodeport
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+  - appProtocol: https
+    name: https
+    port: 6443
+    protocol: TCP
+    targetPort: 6443
+    nodePort: 32112
+  selector:
+    app.kubernetes.io/component: shard
+    app.kubernetes.io/instance: second-shard
+    app.kubernetes.io/managed-by: kcp-operator
+    app.kubernetes.io/name: kcp
+---
 apiVersion: operator.kcp.io/v1alpha1
 kind: FrontProxy
 metadata:
