@@ -17,6 +17,12 @@ spec:
   external:
     hostname: broker-platform-control-plane
     port: 32443
+  certificateTemplates:
+    server:
+      spec:
+        dnsNames:
+          - broker-platform-control-plane
+          - root-kcp.default.svc.cluster.local
   certificates:
     issuerRef:
       group: cert-manager.io
@@ -58,13 +64,19 @@ kind: Shard
 metadata:
   name: second-shard
 spec:
-  etcd:
-    endpoints:
-      - http://kcp-etcd-client.default.svc.cluster.local:2379
   shardBaseURL: https://broker-platform-control-plane:32112
   rootShard:
     ref:
       name: root
+  etcd:
+    endpoints:
+      - http://kcp-etcd-client.default.svc.cluster.local:2379
+  certificateTemplates:
+    server:
+      spec:
+        dnsNames:
+          - broker-platform-control-plane
+          - second-shard-shard-kcp.default.svc.cluster.local
 ---
 apiVersion: v1
 kind: Service
