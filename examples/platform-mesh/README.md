@@ -113,6 +113,15 @@ kubectl kcp crd snapshot --prefix current --output yaml \
     | KUBECONFIG="$PM_KUBECONFIG" kubectl apply -f -
 ```
 
+Update the content configuration:
+
+```bash
+content="$(yq -P -o yaml . ./examples/platform-mesh/example.platform-mesh.io/content-configuration.json)"
+
+content="$content" yq -i '.spec.inlineConfiguration.content = strenv(content)' \
+    ./examples/platform-mesh/example.platform-mesh.io/content-configuration.yaml
+```
+
 And then kustomize the APIExports, RBAC and Platform Mesh resources:
 
 ```bash

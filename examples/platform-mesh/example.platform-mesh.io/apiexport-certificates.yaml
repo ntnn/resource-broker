@@ -1,7 +1,7 @@
 apiVersion: apis.kcp.io/v1alpha2
 kind: APIExport
 metadata:
-  name: certificates
+  name: example.platform-mesh.io
   labels:
     ui.platform-mesh.io/content-for: example.platform-mesh.io
 spec:
@@ -9,10 +9,12 @@ spec:
     - group: example.platform-mesh.io
       name: certificates
       schema: current.certificates.example.platform-mesh.io
-  permissionClaims:
-    - resource: secrets
-      verbs:
-        - "*"
+      storage:
+        crd: {}
+  # permissionClaims:
+  #   - resource: secrets
+  #     verbs:
+  #       - "*"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -26,7 +28,7 @@ rules:
     verbs:
       - bind
     resourceNames:
-      - certificates
+      - example.platform-mesh.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
